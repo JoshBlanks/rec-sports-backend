@@ -1,5 +1,9 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
+import { connectDB } from "./config/db";
+
+// Import routes
+import testRoutes from "./routes/test.routes";
 
 // Load environment variables
 dotenv.config();
@@ -8,9 +12,15 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Connect to Database
+connectDB();
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Mount routes
+app.use("/api/test", testRoutes);
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
@@ -25,6 +35,13 @@ app.get("/health", (req: Request, res: Response) => {
 // Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err: Error) => {
+  console.log(`Error: ${err.message}`);
+  // Close server & exit process
+  process.exit(1);
 });
 
 export default app;
