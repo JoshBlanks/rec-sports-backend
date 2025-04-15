@@ -5,6 +5,7 @@ import { connectDB } from "./config/db";
 // Import routes
 import testRoutes from "./routes/test.routes";
 import authRoutes from "./routes/auth.routes";
+import sportRoutes from "./routes/sport.routes";
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +24,7 @@ app.use(express.urlencoded({ extended: true }));
 // Mount routes
 app.use("/api/test", testRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/sports", sportRoutes);
 
 // Basic route
 app.get("/", (req: Request, res: Response) => {
