@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import dotenv from "dotenv";
 import { connectDB } from "./config/db";
+import { errorHandler } from "./middlewares/error.middleware";
 
 // Import routes
 import testRoutes from "./routes/test.routes";
@@ -36,8 +37,11 @@ app.get("/health", (req: Request, res: Response) => {
   res.status(200).json({ status: "OK", message: "Server is running" });
 });
 
+// Error handler middleware (must be after all routes)
+app.use(errorHandler);
+
 // Start the server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
 

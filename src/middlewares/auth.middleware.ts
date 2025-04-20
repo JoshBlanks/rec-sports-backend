@@ -15,6 +15,8 @@ export const protect = async (
 ): Promise<void> => {
   let token: string | undefined;
 
+  console.log("Auth headers:", req.headers.authorization);
+
   // Check if token exists in headers
   if (
     req.headers.authorization &&
@@ -22,10 +24,12 @@ export const protect = async (
   ) {
     // Extract token from Bearer token
     token = req.headers.authorization.split(" ")[1];
+    console.log("Token found:", token);
   }
 
   // Make sure token exists
   if (!token) {
+    console.log("No token provided");
     res
       .status(401)
       .json({ success: false, message: "Not authorized, no token provided" });
@@ -34,13 +38,19 @@ export const protect = async (
 
   try {
     // Verify token
+    const jwtSecret = process.env.JWT_SECRET || "test-jwt-secret";
+    console.log("Using JWT secret:", jwtSecret);
+
     const decoded = verifyToken(token) as DecodedToken;
+    console.log("Token decoded:", decoded);
 
     // Find user by id
     const user = await User.findById(decoded.id);
+    console.log("User found:", !!user);
 
     // Make sure user still exists
     if (!user) {
+      console.log("User not found for token");
       res
         .status(401)
         .json({ success: false, message: "Not authorized, user not found" });
@@ -49,6 +59,7 @@ export const protect = async (
 
     // Check if user is active
     if (!user.isActive) {
+      console.log("User account is disabled");
       res
         .status(401)
         .json({ success: false, message: "User account is disabled" });
@@ -60,6 +71,7 @@ export const protect = async (
       id: decoded.id,
       role: decoded.role,
     };
+    console.log("User added to request:", (req as any).user);
 
     next();
   } catch (error) {

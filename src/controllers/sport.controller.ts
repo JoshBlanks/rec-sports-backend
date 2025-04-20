@@ -246,7 +246,7 @@ export const permanentDeleteSport = async (
     }
 
     // Permanently delete the sport
-    await Sport.deleteOne({ _id: req.params.id });
+    await Sport.findByIdAndDelete(req.params.id);
 
     res.status(200).json({
       success: true,

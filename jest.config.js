@@ -1,7 +1,7 @@
 module.exports = {
   preset: "ts-jest",
   testEnvironment: "node",
-  testMatch: ["**/__tests__/**/*.ts?(x)", "**/?(*.)+(spec|test).ts?(x)"],
+  testMatch: ["**/src/tests/**/*.test.ts"],
   transform: {
     "^.+\\.(ts|tsx)$": "ts-jest",
   },
@@ -13,6 +13,9 @@ module.exports = {
     "!src/types/**",
     "!src/server.ts",
   ],
-  setupFilesAfterEnv: ["<rootDir>/src/__tests__/setup.ts"],
+  setupFilesAfterEnv: ["<rootDir>/src/tests/setup.ts"],
   testTimeout: 10000, // 10 seconds
+  verbose: true,
+  clearMocks: true,
+  resetMocks: false,
 };

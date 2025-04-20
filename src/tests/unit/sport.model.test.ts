@@ -1,16 +1,31 @@
 import mongoose from "mongoose";
 import Sport from "../../models/sport.model";
-import { clearDatabase } from "../utils/db";
+import { clearDatabase, connect, closeDatabase } from "../utils/db";
+
+// Set up database connection before all tests
+beforeAll(async () => {
+  await connect();
+});
+
+// Clean up database after all tests
+afterAll(async () => {
+  await closeDatabase();
+});
+
+// Clear data between tests
+beforeEach(async () => {
+  await clearDatabase();
+});
 
 describe("Sport Model", () => {
-  // Clear the database before each test
-  beforeEach(async () => {
-    await clearDatabase();
-  });
+  // Generate a unique sport name for each test
+  const generateUniqueSportName = (): string => {
+    return `Test Sport ${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+  };
 
   // Valid sport data for tests
-  const validSportData = {
-    name: "Test Sport",
+  const createValidSportData = () => ({
+    name: generateUniqueSportName(),
     description: "A test sport for unit testing",
     minPlayers: 8,
     maxPlayers: 15,
@@ -27,11 +42,12 @@ describe("Sport Model", () => {
       scoringSystem: "points",
       additionalRules: ["Test rule 1", "Test rule 2"],
     },
-  };
+  });
 
   it("should create a sport with valid data", async () => {
     // Create a new sport
-    const sport = new Sport(validSportData);
+    const sportData = createValidSportData();
+    const sport = new Sport(sportData);
     const savedSport = await sport.save();
 
     // Get the saved sport
@@ -39,23 +55,24 @@ describe("Sport Model", () => {
 
     // Assertions
     expect(foundSport).toBeTruthy();
-    expect(foundSport?.name).toBe(validSportData.name);
-    expect(foundSport?.description).toBe(validSportData.description);
+    expect(foundSport?.name).toBe(sportData.name);
+    expect(foundSport?.description).toBe(sportData.description);
     expect(foundSport?.genderRequirements.minFemale).toBe(
-      validSportData.genderRequirements.minFemale
+      sportData.genderRequirements.minFemale
     );
     expect(foundSport?.genderRequirements.minMale).toBe(
-      validSportData.genderRequirements.minMale
+      sportData.genderRequirements.minMale
     );
     expect(foundSport?.genderRequirements.maxOnField).toBe(
-      validSportData.genderRequirements.maxOnField
+      sportData.genderRequirements.maxOnField
     );
   });
 
   it("should require name field", async () => {
     // Create sport without name
+    const sportData = createValidSportData();
     const sport = new Sport({
-      ...validSportData,
+      ...sportData,
       name: undefined,
     });
 
@@ -65,8 +82,9 @@ describe("Sport Model", () => {
 
   it("should require description field", async () => {
     // Create sport without description
+    const sportData = createValidSportData();
     const sport = new Sport({
-      ...validSportData,
+      ...sportData,
       description: undefined,
     });
 
@@ -76,8 +94,9 @@ describe("Sport Model", () => {
 
   it("should validate gender requirements", async () => {
     // Create sport where min female + min male > max on field
+    const sportData = createValidSportData();
     const sport = new Sport({
-      ...validSportData,
+      ...sportData,
       genderRequirements: {
         minFemale: 4,
         minMale: 4,
@@ -91,8 +110,9 @@ describe("Sport Model", () => {
 
   it("should validate max players per game >= max on field", async () => {
     // Create sport where maxPlayersPerGame < maxOnField
+    const sportData = createValidSportData();
     const sport = new Sport({
-      ...validSportData,
+      ...sportData,
       maxPlayersPerGame: 5,
       genderRequirements: {
         minFemale: 2,
@@ -107,8 +127,9 @@ describe("Sport Model", () => {
 
   it("should validate min players >= min female + min male", async () => {
     // Create sport where minPlayers < minFemale + minMale
+    const sportData = createValidSportData();
     const sport = new Sport({
-      ...validSportData,
+      ...sportData,
       minPlayers: 3,
       genderRequirements: {
         minFemale: 2,
@@ -124,7 +145,7 @@ describe("Sport Model", () => {
   it("should create a sport with optional fields", async () => {
     // Create sport without optional fields
     const sportData = {
-      name: "Minimal Sport",
+      name: generateUniqueSportName(),
       description: "A minimal sport for testing",
       minPlayers: 4,
       maxPlayers: 8,
